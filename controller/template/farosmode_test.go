@@ -27,16 +27,16 @@ import (
 	infrav1alpha1 "github.com/faroshq/provider-infrastructure/apis/v1alpha1"
 )
 
-func kedgeModeProperty(t *testing.T, tmpl *infrav1alpha1.Template) apiextensionsv1.JSONSchemaProps {
+func farosModeProperty(t *testing.T, tmpl *infrav1alpha1.Template) apiextensionsv1.JSONSchemaProps {
 	t.Helper()
 	crd, err := buildPerTemplateCRD(tmpl)
 	if err != nil {
 		t.Fatalf("buildPerTemplateCRD: %v", err)
 	}
 	spec := crd.Spec.Versions[0].Schema.OpenAPIV3Schema.Properties["spec"]
-	prop, ok := spec.Properties[infrav1alpha1.KedgeModeField]
+	prop, ok := spec.Properties[infrav1alpha1.FarosModeField]
 	if !ok {
-		t.Fatalf("per-template CRD spec schema lacks the reserved %q property", infrav1alpha1.KedgeModeField)
+		t.Fatalf("per-template CRD spec schema lacks the reserved %q property", infrav1alpha1.FarosModeField)
 	}
 	return prop
 }
@@ -51,45 +51,45 @@ func enumValues(prop apiextensionsv1.JSONSchemaProps) []string {
 	return out
 }
 
-func TestKedgeModeInjectedProductionOnly(t *testing.T) {
-	prop := kedgeModeProperty(t, newTestTemplate(t, "redis"))
+func TestFarosModeInjectedProductionOnly(t *testing.T) {
+	prop := farosModeProperty(t, newTestTemplate(t, "redis"))
 
 	got := enumValues(prop)
-	if len(got) != 1 || got[0] != infrav1alpha1.KedgeModeProduction {
-		t.Errorf("kedgeMode enum = %v, want [production] for a template without a development block", got)
+	if len(got) != 1 || got[0] != infrav1alpha1.FarosModeProduction {
+		t.Errorf("farosMode enum = %v, want [production] for a template without a development block", got)
 	}
 	var def string
-	if prop.Default == nil || json.Unmarshal(prop.Default.Raw, &def) != nil || def != infrav1alpha1.KedgeModeProduction {
-		t.Errorf("kedgeMode default = %v, want %q", prop.Default, infrav1alpha1.KedgeModeProduction)
+	if prop.Default == nil || json.Unmarshal(prop.Default.Raw, &def) != nil || def != infrav1alpha1.FarosModeProduction {
+		t.Errorf("farosMode default = %v, want %q", prop.Default, infrav1alpha1.FarosModeProduction)
 	}
 }
 
-func TestKedgeModeEnumIncludesDevelopment(t *testing.T) {
+func TestFarosModeEnumIncludesDevelopment(t *testing.T) {
 	tmpl := newTestTemplate(t, "webapp")
 	tmpl.Spec.Development = &infrav1alpha1.TemplateDevelopment{
 		Components: map[string]infrav1alpha1.TemplateDevelopmentComponent{
-			"app": {WorkspacePath: ".", DevImage: "${kedge.devImage.node}", StartCommand: "npm run dev"},
+			"app": {WorkspacePath: ".", DevImage: "${faros.devImage.node}", StartCommand: "npm run dev"},
 		},
 	}
 
-	got := enumValues(kedgeModeProperty(t, tmpl))
-	want := map[string]bool{infrav1alpha1.KedgeModeProduction: false, infrav1alpha1.KedgeModeDevelopment: false}
+	got := enumValues(farosModeProperty(t, tmpl))
+	want := map[string]bool{infrav1alpha1.FarosModeProduction: false, infrav1alpha1.FarosModeDevelopment: false}
 	for _, v := range got {
 		if _, ok := want[v]; ok {
 			want[v] = true
 		}
 	}
-	if !want[infrav1alpha1.KedgeModeProduction] || !want[infrav1alpha1.KedgeModeDevelopment] || len(got) != 2 {
-		t.Errorf("kedgeMode enum = %v, want [production development]", got)
+	if !want[infrav1alpha1.FarosModeProduction] || !want[infrav1alpha1.FarosModeDevelopment] || len(got) != 2 {
+		t.Errorf("farosMode enum = %v, want [production development]", got)
 	}
 }
 
-func TestKedgeModeReservedPropertyRejected(t *testing.T) {
+func TestFarosModeReservedPropertyRejected(t *testing.T) {
 	tmpl := newTestTemplate(t, "redis")
 	schemaRaw, err := json.Marshal(map[string]any{
 		"type": "object",
 		"properties": map[string]any{
-			"kedgeMode": map[string]any{"type": "string"},
+			"farosMode": map[string]any{"type": "string"},
 		},
 	})
 	if err != nil {
@@ -98,7 +98,7 @@ func TestKedgeModeReservedPropertyRejected(t *testing.T) {
 	tmpl.Spec.Schema = &runtime.RawExtension{Raw: schemaRaw}
 
 	if _, err := buildPerTemplateCRD(tmpl); err == nil {
-		t.Fatal("buildPerTemplateCRD: expected error for a template declaring the reserved kedgeMode property, got nil")
+		t.Fatal("buildPerTemplateCRD: expected error for a template declaring the reserved farosMode property, got nil")
 	}
 }
 
@@ -106,7 +106,7 @@ func TestProviderActionsFieldsPreservedInTenantAPIResourceSchema(t *testing.T) {
 	tmpl := newTestTemplate(t, "actions")
 	tmpl.Spec.Development = &infrav1alpha1.TemplateDevelopment{
 		Components: map[string]infrav1alpha1.TemplateDevelopmentComponent{
-			"app": {WorkspacePath: ".", DevImage: "${kedge.devImage.node}", StartCommand: "npm run dev"},
+			"app": {WorkspacePath: ".", DevImage: "${faros.devImage.node}", StartCommand: "npm run dev"},
 		},
 	}
 	crd, err := buildPerTemplateCRD(tmpl)
@@ -129,16 +129,16 @@ func TestProviderActionsFieldsPreservedInTenantAPIResourceSchema(t *testing.T) {
 		t.Fatal("APIResourceSchema lacks instance spec schema")
 	}
 	for _, field := range []string{
-		infrav1alpha1.KedgeActionsExchangeURLField,
-		infrav1alpha1.KedgeActionsBaseURLField,
-		infrav1alpha1.KedgeActionsTenantPathField,
-		infrav1alpha1.KedgeActionsOrgField,
-		infrav1alpha1.KedgeActionsWorkspaceField,
-		infrav1alpha1.KedgeActionsProjectField,
-		infrav1alpha1.KedgeActionsProjectUIDField,
-		infrav1alpha1.KedgeActionsEnvironmentField,
-		infrav1alpha1.KedgeActionsInstanceField,
-		infrav1alpha1.KedgeActionsCABundleField,
+		infrav1alpha1.FarosActionsExchangeURLField,
+		infrav1alpha1.FarosActionsBaseURLField,
+		infrav1alpha1.FarosActionsTenantPathField,
+		infrav1alpha1.FarosActionsOrgField,
+		infrav1alpha1.FarosActionsWorkspaceField,
+		infrav1alpha1.FarosActionsProjectField,
+		infrav1alpha1.FarosActionsProjectUIDField,
+		infrav1alpha1.FarosActionsEnvironmentField,
+		infrav1alpha1.FarosActionsInstanceField,
+		infrav1alpha1.FarosActionsCABundleField,
 	} {
 		prop, ok := spec.Properties[field]
 		if !ok {
@@ -156,13 +156,13 @@ func TestProviderActionsReservedPropertyRejected(t *testing.T) {
 	tmpl := newTestTemplate(t, "actions-reserved")
 	tmpl.Spec.Development = &infrav1alpha1.TemplateDevelopment{
 		Components: map[string]infrav1alpha1.TemplateDevelopmentComponent{
-			"app": {WorkspacePath: ".", DevImage: "${kedge.devImage.node}", StartCommand: "npm run dev"},
+			"app": {WorkspacePath: ".", DevImage: "${faros.devImage.node}", StartCommand: "npm run dev"},
 		},
 	}
 	schemaRaw, err := json.Marshal(map[string]any{
 		"type": "object",
 		"properties": map[string]any{
-			infrav1alpha1.KedgeActionsInstanceField: map[string]any{"type": "string"},
+			infrav1alpha1.FarosActionsInstanceField: map[string]any{"type": "string"},
 		},
 	})
 	if err != nil {
@@ -182,16 +182,16 @@ func TestProviderActionsFieldsStayOutOfProductionSchema(t *testing.T) {
 	}
 	spec := crd.Spec.Versions[0].Schema.OpenAPIV3Schema.Properties["spec"]
 	for _, field := range []string{
-		infrav1alpha1.KedgeActionsExchangeURLField,
-		infrav1alpha1.KedgeActionsBaseURLField,
-		infrav1alpha1.KedgeActionsTenantPathField,
-		infrav1alpha1.KedgeActionsOrgField,
-		infrav1alpha1.KedgeActionsWorkspaceField,
-		infrav1alpha1.KedgeActionsProjectField,
-		infrav1alpha1.KedgeActionsProjectUIDField,
-		infrav1alpha1.KedgeActionsEnvironmentField,
-		infrav1alpha1.KedgeActionsInstanceField,
-		infrav1alpha1.KedgeActionsCABundleField,
+		infrav1alpha1.FarosActionsExchangeURLField,
+		infrav1alpha1.FarosActionsBaseURLField,
+		infrav1alpha1.FarosActionsTenantPathField,
+		infrav1alpha1.FarosActionsOrgField,
+		infrav1alpha1.FarosActionsWorkspaceField,
+		infrav1alpha1.FarosActionsProjectField,
+		infrav1alpha1.FarosActionsProjectUIDField,
+		infrav1alpha1.FarosActionsEnvironmentField,
+		infrav1alpha1.FarosActionsInstanceField,
+		infrav1alpha1.FarosActionsCABundleField,
 	} {
 		if _, found := spec.Properties[field]; found {
 			t.Errorf("production-only tenant schema unexpectedly exposes reserved field %q", field)
@@ -204,7 +204,7 @@ func TestProviderActionsReservedPropertyRejectedForProductionTemplate(t *testing
 	schemaRaw, err := json.Marshal(map[string]any{
 		"type": "object",
 		"properties": map[string]any{
-			infrav1alpha1.KedgeActionsInstanceField: map[string]any{"type": "string"},
+			infrav1alpha1.FarosActionsInstanceField: map[string]any{"type": "string"},
 		},
 	})
 	if err != nil {
