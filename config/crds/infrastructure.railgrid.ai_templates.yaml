@@ -4,12 +4,12 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.16.5
-  name: templates.infrastructure.faros.sh
+  name: templates.infrastructure.railgrid.ai
 spec:
-  group: infrastructure.faros.sh
+  group: infrastructure.railgrid.ai
   names:
     categories:
-    - faros
+    - railgrid
     kind: Template
     listKind: TemplateList
     plural: templates
@@ -41,11 +41,11 @@ spec:
           Template is the platform-owned catalog entry for one provisionable
           thing — a Redis cache, a Postgres database, a packaged application.
           Operators apply Templates to the provider workspace
-          (root:faros:providers:infrastructure). The Template controller
+          (root:railgrid:providers:infrastructure). The Template controller
           reacts by:
 
            1. Materializing the per-template CRD declared in spec.instanceCRD
-              (e.g. redis.infrastructure.faros.sh) into the cluster's
+              (e.g. redis.infrastructure.railgrid.ai) into the cluster's
               CRD set, with OpenAPI validation derived from spec.schema.
            2. Adding that CRD to APIExport.spec.schemas so tenants who
               APIBind to the infrastructure provider can see and create
@@ -343,7 +343,7 @@ spec:
                   platform-managed dev images with a hot-reload agent, where each
                   component's source lives in the project workspace, and how each reloads.
                   A template with a Development block can have instances provisioned with
-                  farosMode: development (the platform-reserved instance spec field the
+                  railgridMode: development (the platform-reserved instance spec field the
                   Template controller injects); templates without one are
                   production-only.
 
@@ -376,11 +376,11 @@ spec:
                           description: |-
                             DevImage is the platform-managed toolchain image the component's
                             workload runs in development mode, in place of the user-supplied
-                            production image. MUST be a ${faros.devImage.<toolchain>} token — the
+                            production image. MUST be a ${railgrid.devImage.<toolchain>} token — the
                             backend resolves it from provider configuration; tenants never choose
                             dev images.
                           maxLength: 128
-                          pattern: ^\$\{faros\.devImage\.[a-z][a-z0-9-]*\}$
+                          pattern: ^\$\{railgrid\.devImage\.[a-z][a-z0-9-]*\}$
                           type: string
                         imageInput:
                           description: |-
@@ -390,7 +390,7 @@ spec:
                             link between a development component and the production image field that
                             runs it: App Studio builds one OCI image per component (build context =
                             WorkspacePath) and, on launch, sets each named input to that component's
-                            built digest before provisioning the instance with farosMode:
+                            built digest before provisioning the instance with railgridMode:
                             production. Empty means the component produces no launchable image (e.g.
                             a worker developed in-cluster but not yet promotable). Must match a
                             top-level property of the template's production schema.
@@ -588,16 +588,16 @@ spec:
                 description: |-
                   InstanceCRD declares the per-template CRD the platform
                   publishes for tenants to author instances against. Must be in
-                  group infrastructure.faros.sh; the resource (lowercase
+                  group infrastructure.railgrid.ai; the resource (lowercase
                   plural) and kind (CamelCase singular) are operator-chosen but
                   must be unique across all Templates.
                 properties:
                   group:
                     description: |-
-                      Group MUST be infrastructure.faros.sh. Pinned here so
+                      Group MUST be infrastructure.railgrid.ai. Pinned here so
                       every per-template CRD lives under the same namespace and the
                       portal can render them uniformly.
-                    pattern: ^infrastructure\.faros\.sh$
+                    pattern: ^infrastructure\.railgrid\.ai$
                     type: string
                   kind:
                     description: Kind is the CamelCase singular tenants use in apiVersion

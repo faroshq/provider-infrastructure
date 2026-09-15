@@ -4,12 +4,12 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.16.5
-  name: infrastructureproviders.infrastructure.faros.sh
+  name: infrastructureproviders.infrastructure.railgrid.ai
 spec:
-  group: infrastructure.faros.sh
+  group: infrastructure.railgrid.ai
   names:
     categories:
-    - faros
+    - railgrid
     kind: InfrastructureProvider
     listKind: InfrastructureProviderList
     plural: infrastructureproviders
@@ -38,7 +38,7 @@ spec:
     schema:
       openAPIV3Schema:
         description: |-
-          InfrastructureProvider is the desired-state config for the faros
+          InfrastructureProvider is the desired-state config for the railgrid
           infrastructure operator. One CR drives the whole runtime: the operator reads
           two kubeconfigs (the kcp provider kubeconfig and the runtime-cluster
           kubeconfig) from the referenced Secrets, continuously bootstraps the provider
@@ -70,8 +70,8 @@ spec:
                 description: |-
                   Application configures the `application` template's exposure layer — the
                   public URL apps are served on and the Gateway API parent that fulfils it.
-                  Maps onto the serve container's FAROS_APP_BASE_DOMAIN / FAROS_GATEWAY_NAME
-                  / FAROS_GATEWAY_NAMESPACE env vars. Optional; without it app exposure stays
+                  Maps onto the serve container's RAILGRID_APP_BASE_DOMAIN / RAILGRID_GATEWAY_NAME
+                  / RAILGRID_GATEWAY_NAMESPACE env vars. Optional; without it app exposure stays
                   off (see ApplicationSpec).
                 properties:
                   baseDomain:
@@ -87,7 +87,7 @@ spec:
                       Gateway identifies the ONE Gateway API parent every template's generated
                       HTTPRoutes attach to — 3-tier apps and sandbox previews alike (cfgate's
                       cloudflare-tunnel in prod, an envoy Gateway locally). Its name/namespace
-                      are substituted for the ${faros.gatewayName} / ${faros.gatewayNamespace}
+                      are substituted for the ${railgrid.gatewayName} / ${railgrid.gatewayNamespace}
                       tokens in a Template's backendConfig before the kro RGD is authored.
                       Empty fields fall back to the in-binary default ("cloudflare-tunnel" in
                       "cfgate-system").
@@ -118,17 +118,17 @@ spec:
               development:
                 description: |-
                   Development configures the platform-managed development-mode images
-                  (docs/app-studio-template-sandboxes.md): the faros-dev-agent injector
+                  (docs/app-studio-template-sandboxes.md): the railgrid-dev-agent injector
                   and the per-toolchain dev images substituted for
-                  ${faros.devImage.<toolchain>} tokens. Maps onto the serve container's
-                  FAROS_DEV_AGENT_IMAGE / FAROS_DEV_IMAGE_<TOOLCHAIN> env vars. Optional;
+                  ${railgrid.devImage.<toolchain>} tokens. Maps onto the serve container's
+                  RAILGRID_DEV_AGENT_IMAGE / RAILGRID_DEV_IMAGE_<TOOLCHAIN> env vars. Optional;
                   the node toolchain and the agent have in-binary defaults. These images
                   run tenant code — production should pin digests.
                 properties:
                   agentImage:
                     description: |-
-                      AgentImage is the injector image carrying the static faros-dev-agent
-                      binary (FAROS_DEV_AGENT_IMAGE). Empty → the in-binary default.
+                      AgentImage is the injector image carrying the static railgrid-dev-agent
+                      binary (RAILGRID_DEV_AGENT_IMAGE). Empty → the in-binary default.
                     maxLength: 512
                     type: string
                   images:
@@ -136,8 +136,8 @@ spec:
                       type: string
                     description: |-
                       Images maps a toolchain name (the <toolchain> in a template's
-                      ${faros.devImage.<toolchain>} token; lowercase, dashes) to its image
-                      (FAROS_DEV_IMAGE_<TOOLCHAIN>). A template referencing an unconfigured
+                      ${railgrid.devImage.<toolchain>} token; lowercase, dashes) to its image
+                      (RAILGRID_DEV_IMAGE_<TOOLCHAIN>). A template referencing an unconfigured
                       toolchain (other than the defaulted "node") fails setup.
                     type: object
                 type: object
@@ -162,7 +162,7 @@ spec:
                     - name
                     type: object
                   url:
-                    description: URL is the faros hub base URL.
+                    description: URL is the railgrid hub base URL.
                     type: string
                 type: object
               kro:
@@ -187,7 +187,7 @@ spec:
                       default applies (registry.k8s.io/kro/kro at the chart's appVersion).
                     properties:
                       repository:
-                        description: Repository is the image repository, e.g. ghcr.io/faroshq/...
+                        description: Repository is the image repository, e.g. ghcr.io/railgrid/...
                         type: string
                       tag:
                         description: Tag is the image tag, e.g. v0.1.0.
@@ -218,7 +218,7 @@ spec:
                     description: Image is the provider serve container image.
                     properties:
                       repository:
-                        description: Repository is the image repository, e.g. ghcr.io/faroshq/...
+                        description: Repository is the image repository, e.g. ghcr.io/railgrid/...
                         type: string
                       tag:
                         description: Tag is the image tag, e.g. v0.1.0.
@@ -257,7 +257,7 @@ spec:
               providerWorkspace:
                 description: |-
                   ProviderWorkspace is the kcp workspace path the provider is bootstrapped
-                  into, e.g. "root:faros:providers:infrastructure". Optional: when the
+                  into, e.g. "root:railgrid:providers:infrastructure". Optional: when the
                   provider kubeconfig is already scoped to the provider workspace (as the
                   admin portal issues it), the operator discovers the path from the
                   workspace's kcp.io/path annotation, so you don't need to set this. Set it
@@ -267,13 +267,13 @@ spec:
               publishing:
                 description: |-
                   Publishing configures the template-embedded access gate. The provider
-                  substitutes these values into template graphs as ${faros.*} tokens
+                  substitutes these values into template graphs as ${railgrid.*} tokens
                   (gate image, hub endpoints); tenants cannot override them.
                 properties:
                   accessProxyImage:
                     description: |-
                       AccessProxyImage is the complete image reference for
-                      faros-access-proxy, preferably pinned by digest.
+                      railgrid-access-proxy, preferably pinned by digest.
                     maxLength: 512
                     type: string
                   baseDomain:
@@ -300,14 +300,14 @@ spec:
                     type: boolean
                   hubPublicURL:
                     description: |-
-                      HubPublicURL is the browser-reachable Faros hub origin used for login
+                      HubPublicURL is the browser-reachable Railgrid hub origin used for login
                       redirects. It may differ from HubURL, which access proxies use for
                       in-cluster exchange and authorization checks.
                     maxLength: 2048
                     type: string
                   hubURL:
                     description: |-
-                      HubURL is the internal Faros hub URL used only for the app-access
+                      HubURL is the internal Railgrid hub URL used only for the app-access
                       authorize/callback/check protocol.
                     maxLength: 2048
                     type: string
@@ -356,7 +356,7 @@ spec:
                   runtimeClassName:
                     description: |-
                       RuntimeClassName is stamped as spec.runtimeClassName on every
-                      synthesized development pod (FAROS_SANDBOX_RUNTIME_CLASS_NAME). It must
+                      synthesized development pod (RAILGRID_SANDBOX_RUNTIME_CLASS_NAME). It must
                       name a RuntimeClass that exists on the runtime cluster, typically
                       "gvisor" or "kata". Empty keeps the cluster default runtime.
                     maxLength: 253

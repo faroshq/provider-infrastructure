@@ -4,12 +4,12 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.16.5
-  name: instances.infrastructure.faros.sh
+  name: instances.infrastructure.railgrid.ai
 spec:
-  group: infrastructure.faros.sh
+  group: infrastructure.railgrid.ai
   names:
     categories:
-    - faros
+    - railgrid
     kind: Instance
     listKind: InstanceList
     plural: instances
@@ -95,8 +95,8 @@ spec:
                   Values is the template-shaped input — exactly the object
                   Template.spec.schema describes, the same payload that used to be the
                   whole spec of the retired per-template kinds. The platform-reserved
-                  fields (farosMode, farosActions*, plus controller-stamped fields like
-                  expose.fqdn, farosCluster, credentialsSecretName) live in here too, so
+                  fields (railgridMode, railgridActions*, plus controller-stamped fields like
+                  expose.fqdn, railgridCluster, credentialsSecretName) live in here too, so
                   "spec" in template schemas, RGD ${schema.spec.*} expressions, and view
                   definitions all keep meaning this object.
 
@@ -147,12 +147,6 @@ spec:
                   - type
                   type: object
                 type: array
-              farosNetworkPhase:
-                description: |-
-                  NetworkPhase is the controller-owned runtime network phase. It is
-                  mirrored from the runtime Instance only after the runtime reports Ready;
-                  callers must not use spec.values as an execution-readiness signal.
-                type: string
               message:
                 description: Message carries human-readable detail for the current
                   phase.
@@ -167,6 +161,12 @@ spec:
                 description: |-
                   Phase is the coarse lifecycle summary (Pending / Ready / Failed),
                   derived from conditions for consumers that want one word.
+                type: string
+              railgridNetworkPhase:
+                description: |-
+                  NetworkPhase is the controller-owned runtime network phase. It is
+                  mirrored from the runtime Instance only after the runtime reports Ready;
+                  callers must not use spec.values as an execution-readiness signal.
                 type: string
               template:
                 description: Template echoes spec.template as resolved at last reconcile.

@@ -1,5 +1,5 @@
 /*
- * faros-ui — shared component recipes for the whole portal surface.
+ * railgrid-ui — shared component recipes for the whole portal surface.
  *
  * WHY THIS FILE EXISTS
  * Every provider micro-frontend (including the self-contained code / kuery /
@@ -25,10 +25,10 @@
  * without replacing it or letting an older vendored copy win.
  */
 :root {
-  --faros-ui-canonical: 1;
+  --railgrid-ui-canonical: 1;
   /* This marker covers the core PortalKit recipes only. It advances when a
    * core primitive changes, independently from optional AgentKit recipes. */
-  --faros-ui-core-version: 20;
+  --railgrid-ui-core-version: 20;
   --k-toast-bottom-offset: 16px;
   /* Shared stacking contract: menus sit above page content, fullscreen
    * surfaces above menus, and global modal/toast layers remain topmost. */
@@ -921,7 +921,7 @@ html.light .k-menu {
   min-width: 0;
   position: relative;
 }
-faros-form-select {
+railgrid-form-select {
   display: block;
   min-width: 0;
 }
@@ -1925,7 +1925,7 @@ html.light [data-k-tip]::after {
   position: relative;
   transition: border-color 120ms ease;
 }
-faros-resource-table-filter { display: contents; }
+railgrid-resource-table-filter { display: contents; }
 .k-table__filter--combobox {
   grid-template-columns: auto minmax(116px, 1fr);
   min-width: 210px;
